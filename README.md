@@ -3,6 +3,7 @@
 ## Steps:
 # Create a contract in contract folder
 example: 
+```json
 {
     "contract" : {
         "symbol" : "ES",
@@ -17,12 +18,13 @@ example:
     "ema_interval" : "1 min",  (use intervals as given in ib_insync documentation)
     "emas" : [9,20]  (EMAS provide first number who's EMA you want to be greater)
 }
-
+```
 # Run main.py
 
 # Every time an Order will be created in the Order folder for a contract
 example:
 (example of a stock bought)
+```json
 {
     "contract": "Contract(secType='STK', conId=265598, symbol='AAPL', exchange='SMART', primaryExchange='NASDAQ', currency='USD', localSymbol='AAPL', tradingClass='NMS')",
     "entry_timestamp": "2023-10-10 01:11:21.286851",
@@ -30,7 +32,9 @@ example:
     "long/short": "long",
     "quantity": 1.0
 }
+```
 (example of closing a position)
+```json
 {
     "contract": "Contract(secType='STK', conId=265598, symbol='AAPL', exchange='SMART', primaryExchange='NASDAQ', currency='USD', localSymbol='AAPL', tradingClass='NMS')",
     "entry_timestamp": "2023-10-10 01:11:21.286851",
@@ -40,3 +44,4 @@ example:
     "exit_timestamp" :  "2023-10-10 01:50:21.286851",
     "exit_price" : 179.9
 }
+```
