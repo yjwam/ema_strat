@@ -1,7 +1,7 @@
-### EMA STRATEGY
+# EMA STRATEGY
 
 ## Steps:
-# Create a contract in contract folder
+### Create a contract in contract folder
 example: 
 ```json
 {
@@ -19,9 +19,9 @@ example:
     "emas" : [9,20]  (EMAS provide first number who's EMA you want to be greater)
 }
 ```
-# Run main.py
+### Run main.py
 
-# Every time an Order will be created in the Order folder for a contract
+### Every time an Order will be created in the Order folder for a contract
 example:
 (example of a stock bought)
 ```json
