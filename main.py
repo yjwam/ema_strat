@@ -4,7 +4,7 @@ from ib_insync import *
 import json
 import os
 import schedule
-import pandas as pd
+import time
 
 ib = IB()
 ib.connect('127.0.0.1', 7497, clientId=1)
@@ -79,28 +79,35 @@ def trade_time(contract_info,ib,debugging=False):
     high_ema = ema(hist_data,emas[1])
     print("low ema :",low_ema)
     print("high ema :",high_ema)
-    
-    if (low_ema > high_ema or True) and contract_info['action'] == "BUY":
-        position = 1
-        trade = place_order(contract,ib,"BUY",quantity)
-        traded_price = trade.fills[0].execution.price
-        stop_loss = (1-trailing_stop/100)*traded_price
-        update_results(path,contract,trade,True)
+    # check any open positions
+    open_pos,open_pos_dict = check_open_orders(path,contract)
+    if not open_pos:
+        if (low_ema > high_ema or True) and contract_info['action'] == "BUY":
+            position = 1
+            trade = place_order(contract,ib,"BUY",quantity)
+            traded_price = trade.fills[0].execution.price
+            stop_loss = (1-trailing_stop/100)*traded_price
+            update_results(path,contract,trade,True)
 
-    elif low_ema > high_ema and contract_info['action'] == "SELL":
-        position = -1
-        trade = place_order(contract,ib,"SELL",quantity)
-        traded_price = trade.fills[0].execution.price
-        stop_loss = (1+trailing_stop/100)*traded_price
-        update_results(path,contract,trade,True)
+        elif low_ema > high_ema and contract_info['action'] == "SELL":
+            position = -1
+            trade = place_order(contract,ib,"SELL",quantity)
+            traded_price = trade.fills[0].execution.price
+            stop_loss = (1+trailing_stop/100)*traded_price
+            update_results(path,contract,trade,True)
 
+        else:
+            position = 0
     else:
-        position = 0
+        traded_price = open_pos_dict['entry_price']
+        position = 1 if open_pos_dict["long/short"] == "long" else -1
+        stop_loss = (1-trailing_stop/100)*traded_price if position == 1 else (1+trailing_stop/100)*traded_price
+
 
     current_price = live_data(contract,ib,debugging)
     print(datetime.datetime.now()," Current Price :",current_price)
     while position != 0:
-        current_price = live_data(contract,ib,debugging) #function to read from api subscription
+        current_price = live_data(contract,ib,debugging)
         print(datetime.datetime.now()," Current Price :",current_price)
         if (current_price/traded_price-1)*100 >= taking_profit:
             if position > 0:
@@ -132,12 +139,26 @@ def trade_time(contract_info,ib,debugging=False):
         if  (new_stop - stop_loss)*position >= 0:
             stop_loss = new_stop
             print('trailing stop',stop_loss)
+        time.sleep(2)
     return False
+
+def check_open_orders(path,contract):
+    cId = str(contract.conId)+".json"
+    path = os.path.join(path,cId)
+    try:
+        with open(path) as f:
+            temp = json.load(f)
+            if "exit_price" in list(temp.keys()):
+                return False, {}
+            else:
+                return True, temp
+    except:
+        return False,{}
 
 def main():
     with open('contracts\AAPL.json') as f:
         contract_info = json.load(f)
-    schedule.every().minute.at(":00").do(trade_time,contract_info = contract_info,ib=ib,debugging = debugging)
+    schedule.every().minute.at(":00").do(trade_time, contract_info = contract_info, ib = ib, debugging = debugging)
     while True:
         try:
             schedule.run_pending()
