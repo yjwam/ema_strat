@@ -166,6 +166,8 @@ def main():
             if debugging:
                 raise e
             continue
+        if datetime.datetime.now().time() > datetime.datetime(2023,1,1,16,0).time():
+            break
     return None
 
 if __name__ == "__main__":
