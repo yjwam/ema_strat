@@ -36,7 +36,11 @@ def ema(data,number):
 def live_data(contract,ib,debugging=False):
     # function to fecth live data from ib tws using input for debugging
     if not debugging:
-        return ib.reqMktData(contract).marketPrice()
+        ib.reqMktData(contract)
+        ib.sleep(2)
+        bar = ib.ticker(contract)
+        price = bar.marketPrice()
+        return price
     else:
         return float(input("Enter current price: "))
 
@@ -82,7 +86,7 @@ def trade_time(contract_info,ib,debugging=False):
     # check any open positions
     open_pos,open_pos_dict = check_open_orders(path,contract)
     if not open_pos:
-        if (low_ema > high_ema or True) and contract_info['action'] == "BUY":
+        if low_ema > high_ema and contract_info['action'] == "BUY":
             position = 1
             trade = place_order(contract,ib,"BUY",quantity)
             traded_price = trade.fills[0].execution.price
@@ -109,7 +113,7 @@ def trade_time(contract_info,ib,debugging=False):
     while position != 0:
         current_price = live_data(contract,ib,debugging)
         print(datetime.datetime.now()," Current Price :",current_price)
-        if (current_price/traded_price-1)*100 >= taking_profit:
+        if abs(current_price/traded_price-1)*100 >= taking_profit:
             if position > 0:
                 position = 0
                 print("taking profit")
@@ -139,7 +143,6 @@ def trade_time(contract_info,ib,debugging=False):
         if  (new_stop - stop_loss)*position >= 0:
             stop_loss = new_stop
             print('trailing stop',stop_loss)
-        time.sleep(2)
     return False
 
 def check_open_orders(path,contract):
@@ -166,8 +169,8 @@ def main():
             if debugging:
                 raise e
             continue
-        if datetime.datetime.now().time() > datetime.datetime(2023,1,1,16,0).time():
-            break
+        # if datetime.datetime.now().time() > datetime.datetime(2023,1,1,16,0).time():
+        #     break
     return None
 
 if __name__ == "__main__":
