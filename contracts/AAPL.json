@@ -1,0 +1,14 @@
+{
+    "contract" : {
+        "symbol" : "AAPL",
+        "secType" : "STK",
+        "exchange" : "SMART",
+        "currency" : "USD"
+    },
+    "no_contract" : 1,
+    "action" : "BUY",
+    "take_profit_pct" : 2,
+    "trailing_stop_pct" : 1,
+    "ema_interval" : "1 min",
+    "emas" : [9,20]
+}

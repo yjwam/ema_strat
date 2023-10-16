@@ -117,6 +117,7 @@ def trade_time(contract_info,ib,debugging=False):
             print("Taking Short Position")
 
         else:
+            print("No Position Taken")
             position = 0
     else:
         print("Open Position Found")
@@ -180,9 +181,9 @@ def main():
     while True:
         now = datetime.datetime.now()
         est_time = now.astimezone(est).time()
-        if est_time > datetime.datetime(2023,1,1,16,0).time():
-            print("Market Closed")
-            break
+        # if est_time > datetime.datetime(2023,1,1,16,0).time():
+        #     print("Market Closed")
+        #     break
         try:
             schedule.run_pending()
         except Exception as e:
@@ -192,5 +193,5 @@ def main():
     return None
 
 if __name__ == "__main__":
-    debugging = False
+    debugging = True
     main()
