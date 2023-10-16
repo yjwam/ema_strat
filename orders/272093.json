@@ -1,7 +1,0 @@
-{
-    "contract": "Contract(secType='STK', conId=272093, symbol='MSFT', exchange='SMART', primaryExchange='NASDAQ', currency='USD', localSymbol='MSFT', tradingClass='NMS')",
-    "entry_timestamp": "2023-10-10 00:59:11.019383",
-    "entry_price": 329.62,
-    "long/short": "long",
-    "quantity": 1.0
-}

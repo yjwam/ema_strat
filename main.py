@@ -163,7 +163,7 @@ def check_open_orders(path,contract):
         return False,{}
 
 def main():
-    with open('contracts\AAPL.json') as f:
+    with open(r'contracts\AAPL.json') as f:
         contract_info = json.load(f)
     schedule.every().minute.at(":00").do(trade_time, contract_info = contract_info, ib = ib, debugging = debugging)
     while True:

@@ -1,7 +1,0 @@
-{
-    "contract": "Contract(secType='STK', conId=265598, symbol='AAPL', exchange='SMART', primaryExchange='NASDAQ', currency='USD', localSymbol='AAPL', tradingClass='NMS')",
-    "entry_timestamp": "2023-10-13 22:19:01.735906",
-    "entry_price": 179.3,
-    "long/short": "long",
-    "quantity": 1.0
-}
