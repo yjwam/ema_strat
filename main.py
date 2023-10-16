@@ -39,7 +39,7 @@ def get_historical_data(contract,barsize,debugging = False):
     return data
 
 def ema(data,number):
-    return data.rolling(window=number).mean().iloc[-1]
+    return data.rolling(window=number).mean().iloc[-1],data.rolling(window=number).mean().iloc[-2]
 
 def live_data(contract,ib,debugging=False):
     # function to fecth live data from ib tws using input for debugging
@@ -79,7 +79,6 @@ def update_results(path,contract,trade,first = False):
     return None
 
 def trade_time(contract_info,ib,debugging=False):
-    print("Starting Algorithm")
     path = "orders"
     contract = create_ib_contract(contract_info['contract'],ib)
     # check any open positions
@@ -96,12 +95,12 @@ def trade_time(contract_info,ib,debugging=False):
         hist_data = get_historical_data(contract,contract_info['ema_interval'],debugging)
         print("Calculating EMAs")
         emas = contract_info['emas']
-        low_ema = ema(hist_data,emas[0])
-        high_ema = ema(hist_data,emas[1])
-        print(" low ema :",low_ema)
-        print(" high ema :",high_ema)
+        low_ema, low_ema_pre = ema(hist_data,emas[0])
+        high_ema, high_ema_pre = ema(hist_data,emas[1])
+        print(f" current EMAs : {emas[0]} -> {round(low_ema,5)} , {emas[1]} -> {round(high_ema,5)}")
+        print(f" previous EMAs : {emas[0]} -> {round(low_ema_pre,5)} , {emas[1]} -> {round(high_ema_pre,5)}")
 
-        if low_ema > high_ema and contract_info['action'] == "BUY":
+        if (low_ema > high_ema and low_ema_pre <= high_ema_pre) and contract_info['action'] == "BUY":
             position = 1
             trade = place_order(contract,ib,"BUY",quantity)
             traded_price = trade.fills[0].execution.price
@@ -109,7 +108,7 @@ def trade_time(contract_info,ib,debugging=False):
             update_results(path,contract,trade,True)
             print("Taking Long Position")
 
-        elif low_ema > high_ema and contract_info['action'] == "SELL":
+        elif (low_ema > high_ema and low_ema_pre <= high_ema_pre) and contract_info['action'] == "SELL":
             position = -1
             trade = place_order(contract,ib,"SELL",quantity)
             traded_price = trade.fills[0].execution.price
@@ -174,6 +173,7 @@ def check_open_orders(path,contract):
         return False,{}
 
 def main():
+    print("Starting Algorithm")
     with open(r'contracts\AAPL.json') as f:
         contract_info = json.load(f)
     schedule.every().minute.at(":00").do(trade_time, contract_info = contract_info, ib = ib, debugging = debugging)
