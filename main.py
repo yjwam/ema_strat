@@ -20,14 +20,18 @@ def get_historical_data(contract,barsize,debugging = False):
         sym = contract.symbol
         data = yf.download(tickers=sym,interval='1m')['Adj Close']
     else:
-        bars = ib.reqHistoricalData(
-            contract=contract,
-            endDateTime='',
-            durationStr='1 D',
-            barSizeSetting=barsize,
-            whatToShow='TRADES',
-            useRTH=True)
-        data = util.df(bars)['close']
+        try:
+            bars = ib.reqHistoricalData(
+                contract=contract,
+                endDateTime='',
+                durationStr='1 D',
+                barSizeSetting=barsize,
+                whatToShow='TRADES',
+                useRTH=True)
+            data = util.df(bars)['close']
+        except:
+            ib.sleep(1)
+            data = get_historical_data(contract,barsize,debugging = False)
     return data
 
 def ema(data,number):
@@ -113,7 +117,7 @@ def trade_time(contract_info,ib,debugging=False):
     while position != 0:
         current_price = live_data(contract,ib,debugging)
         print(datetime.datetime.now()," Current Price :",current_price)
-        if abs(current_price/traded_price-1)*100 >= taking_profit:
+        if position*(current_price/traded_price-1)*100 >= taking_profit:
             if position > 0:
                 position = 0
                 print("taking profit")
