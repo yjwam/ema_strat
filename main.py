@@ -187,6 +187,9 @@ def main():
         try:
             schedule.run_pending()
         except Exception as e:
+            ib.disconnect()
+            ib = IB()
+            ib.connect('127.0.0.1', 7497, clientId=1)
             if debugging:
                 raise e
             continue
