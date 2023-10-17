@@ -6,12 +6,6 @@ import os
 import schedule
 import pytz
 
-ib = IB()
-ib.connect('127.0.0.1', 7497, clientId=1)
-
-est = pytz.timezone('US/Eastern')
-
-
 def create_ib_contract(contract,ib):
     contract = Contract(symbol=contract['symbol'], secType=contract['secType'], exchange=contract['exchange'], currency=contract['currency'], includeExpired=True)
     contract = ib.qualifyContracts(contract)[0]
@@ -95,6 +89,7 @@ def trade_time(contract_info,ib,debugging=False):
         hist_data = get_historical_data(contract,contract_info['ema_interval'],debugging)
         print("Calculating EMAs")
         emas = contract_info['emas']
+        emas = sorted(emas)
         low_ema, low_ema_pre = ema(hist_data,emas[0])
         high_ema, high_ema_pre = ema(hist_data,emas[1])
         print(f" current EMAs : {emas[0]} -> {round(low_ema,5)} , {emas[1]} -> {round(high_ema,5)}")
@@ -108,7 +103,7 @@ def trade_time(contract_info,ib,debugging=False):
             update_results(path,contract,trade,True)
             print("Taking Long Position")
 
-        elif (low_ema > high_ema and low_ema_pre <= high_ema_pre) and contract_info['action'] == "SELL":
+        elif (low_ema < high_ema and low_ema_pre >= high_ema_pre) and contract_info['action'] == "SELL":
             position = -1
             trade = place_order(contract,ib,"SELL",quantity)
             traded_price = trade.fills[0].execution.price
@@ -173,7 +168,7 @@ def check_open_orders(path,contract):
     except:
         return False,{}
 
-def main():
+def main(ib):
     print("Starting Algorithm")
     with open(r'contracts\AAPL.json') as f:
         contract_info = json.load(f)
@@ -181,7 +176,7 @@ def main():
     while True:
         now = datetime.datetime.now()
         est_time = now.astimezone(est).time()
-        if est_time > datetime.datetime(2023,1,1,16,0).time():
+        if est_time > datetime.datetime(2023,1,1,20,0).time():
             print("Market Closed")
             break
         try:
@@ -195,6 +190,15 @@ def main():
             continue
     return None
 
-if __name__ == "__main__":
-    debugging = False
-    main()
+debugging = False
+ib = IB()
+for i in range(1,51):
+    try:
+        ib.connect('127.0.0.1', 7497, clientId=i)
+        print(f"Connected with client ID {i}")
+        break
+    except:
+        print(f"Client ID {i} in use")
+        continue
+est = pytz.timezone('US/Eastern')
+main(ib)
