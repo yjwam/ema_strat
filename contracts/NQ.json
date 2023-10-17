@@ -1,0 +1,14 @@
+{
+    "contract" : {
+        "symbol" : "NQ",
+        "secType" : "CONTFUT",
+        "exchange" : "CME",
+        "currency" : "USD"
+    },
+    "no_contract" : 1,
+    "action" : "SELL",
+    "take_profit_pct" : 0.1,
+    "trailing_stop_pct" : 0.2,
+    "ema_interval" : "1 min",
+    "emas" : [10,21]
+}
