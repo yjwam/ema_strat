@@ -10,5 +10,6 @@
     "take_profit_pct" : 2,
     "trailing_stop_pct" : 1,
     "ema_interval" : "1 min",
-    "emas" : [9,20]
+    "emas" : [9,20],
+    "trading_hours" : "ETH"
 }

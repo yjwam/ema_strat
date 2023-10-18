@@ -11,25 +11,26 @@ def create_ib_contract(contract,ib):
     contract = ib.qualifyContracts(contract)[0]
     return contract
 
-def get_historical_data(contract,barsize,debugging = False):
+def get_historical_data(contract,barsize,trading_hours,debugging = False):
     # function to get historical data to calculate EMA used Yahoo finacne in debugging
     if debugging:
         sym = contract.symbol
         data = yf.download(tickers=sym,interval='1m')['Adj Close']
     else:
         try:
+            RTH = True if trading_hours == "RTH" else False
             bars = ib.reqHistoricalData(
                 contract=contract,
                 endDateTime='',
                 durationStr='1 D',
                 barSizeSetting=barsize,
                 whatToShow='TRADES',
-                useRTH=True)
+                useRTH=RTH)
             data = util.df(bars)['close']
         except:
             ib.sleep(1)
             print("Retrying to get historical data")
-            data = get_historical_data(contract,barsize,debugging = False)
+            data = get_historical_data(contract,barsize,trading_hours,debugging = False)
     return data
 
 def ema(data,number):
@@ -86,7 +87,7 @@ def trade_time(contract_info,ib,debugging=False):
     quantity = contract_info['no_contract']
     if not open_pos:
 
-        hist_data = get_historical_data(contract,contract_info['ema_interval'],debugging)
+        hist_data = get_historical_data(contract,contract_info['ema_interval'],contract_info["trading_hours"],debugging)
         print("Calculating EMAs")
         emas = contract_info['emas']
         emas = sorted(emas)
@@ -170,7 +171,7 @@ def check_open_orders(path,contract):
 
 def main(ib):
     print("Starting Algorithm")
-    with open(r'contracts\AAPL.json') as f:
+    with open(r'contracts\ES.json') as f:
         contract_info = json.load(f)
     schedule.every().minute.at(":00").do(trade_time, contract_info = contract_info, ib = ib, debugging = debugging)
     while True:
