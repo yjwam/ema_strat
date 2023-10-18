@@ -171,7 +171,7 @@ def check_open_orders(path,contract):
 
 def main(ib):
     print("Starting Algorithm")
-    with open(r'contracts\ES.json') as f:
+    with open(r'contracts\NQ.json') as f:
         contract_info = json.load(f)
     schedule.every().minute.at(":00").do(trade_time, contract_info = contract_info, ib = ib, debugging = debugging)
     while True:
@@ -197,9 +197,16 @@ for i in range(1,51):
     try:
         ib.connect('127.0.0.1', 7497, clientId=i)
         print(f"Connected with client ID {i}")
+        ib_open = True
+        break
+    except ConnectionRefusedError:
+        ib_open = False
+        print("Please open TWS and run code again")
         break
     except:
+        ib_open = False
         print(f"Client ID {i} in use")
         continue
 est = pytz.timezone('US/Eastern')
-main(ib)
+if ib_open:
+    main(ib)

@@ -197,9 +197,16 @@ for i in range(1,51):
     try:
         ib.connect('127.0.0.1', 7497, clientId=i)
         print(f"Connected with client ID {i}")
+        ib_open = True
+        break
+    except ConnectionRefusedError:
+        ib_open = False
+        print("Please open TWS and run code again")
         break
     except:
+        ib_open = False
         print(f"Client ID {i} in use")
         continue
 est = pytz.timezone('US/Eastern')
-main(ib)
+if ib_open:
+    main(ib)
