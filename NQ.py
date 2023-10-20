@@ -169,7 +169,7 @@ def check_open_orders(path,contract):
     except:
         return False,{}
 
-def main(ib):
+def main(ib,i):
     print("Starting Algorithm")
     with open(r'contracts\NQ.json') as f:
         contract_info = json.load(f)
@@ -185,7 +185,13 @@ def main(ib):
         except Exception as e:
             ib.disconnect()
             ib = IB()
-            ib.connect('127.0.0.1', 7497, clientId=1)
+            while not ib.isConnected():
+                try:
+                    ib.connect('127.0.0.1', 7497, clientId=i)
+                except:
+                    print("Trying to reconnect with TWS")
+                    ib.sleep(1)
+            print("Reconnect with TWS")
             if debugging:
                 raise e
             continue
@@ -209,4 +215,4 @@ for i in range(1,51):
         continue
 est = pytz.timezone('US/Eastern')
 if ib_open:
-    main(ib)
+    main(ib,i)
