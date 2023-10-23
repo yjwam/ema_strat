@@ -11,7 +11,7 @@ def create_ib_contract(contract,ib):
     contract = ib.qualifyContracts(contract)[0]
     return contract
 
-def get_historical_data(contract,barsize,trading_hours,debugging = False):
+def get_historical_data(ib,contract,barsize,trading_hours,debugging = False):
     # function to get historical data to calculate EMA used Yahoo finacne in debugging
     if debugging:
         sym = contract.symbol
@@ -27,10 +27,11 @@ def get_historical_data(contract,barsize,trading_hours,debugging = False):
                 whatToShow='TRADES',
                 useRTH=RTH)
             data = util.df(bars)['close']
-        except:
+        except Exception as e:
+            print("Error:",e)
             ib.sleep(1)
             print("Retrying to get historical data")
-            data = get_historical_data(contract,barsize,trading_hours,debugging = False)
+            data = get_historical_data(ib,contract,barsize,trading_hours,debugging = False)
     return data
 
 def ema(data,number):
@@ -87,7 +88,7 @@ def trade_time(contract_info,ib,debugging=False):
     quantity = contract_info['no_contract']
     if not open_pos:
 
-        hist_data = get_historical_data(contract,contract_info['ema_interval'],contract_info["trading_hours"],debugging)
+        hist_data = get_historical_data(ib,contract,contract_info['ema_interval'],contract_info["trading_hours"],debugging)
         print("Calculating EMAs")
         emas = contract_info['emas']
         emas = sorted(emas)
@@ -181,6 +182,7 @@ def main(ib,i):
             schedule.run_pending()
             continue
         except Exception as e:
+            print("Error:", e)
             ib.disconnect()
             ib = IB()   
             while not ib.isConnected():
@@ -188,7 +190,8 @@ def main(ib,i):
                     ib.connect('127.0.0.1', 7497, clientId=i)
                     schedule.cancel_job(job)
                     job = schedule.every().minute.at(":00").do(trade_time, contract_info = contract_info, ib = ib, debugging = debugging)
-                except:
+                except Exception as e:
+                    print("Error:",e)
                     print("Trying to reconnect with TWS")
                     ib.sleep(1)
             print("Reconnect with TWS")
