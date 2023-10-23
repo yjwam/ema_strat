@@ -173,21 +173,21 @@ def main(ib,i):
     print("Starting Algorithm")
     with open(r'contracts\NQ.json') as f:
         contract_info = json.load(f)
-    schedule.every().minute.at(":00").do(trade_time, contract_info = contract_info, ib = ib, debugging = debugging)
+    job = schedule.every().minute.at(":00").do(trade_time, contract_info = contract_info, ib = ib, debugging = debugging)
     while True:
         now = datetime.datetime.now()
         est_time = now.astimezone(est).time()
-        if est_time > datetime.datetime(2023,1,1,20,0).time():
-            print("Market Closed")
-            break
         try:
             schedule.run_pending()
+            continue
         except Exception as e:
             ib.disconnect()
-            ib = IB()
+            ib = IB()   
             while not ib.isConnected():
                 try:
                     ib.connect('127.0.0.1', 7497, clientId=i)
+                    schedule.cancel_job(job)
+                    job = schedule.every().minute.at(":00").do(trade_time, contract_info = contract_info, ib = ib, debugging = debugging)
                 except:
                     print("Trying to reconnect with TWS")
                     ib.sleep(1)
